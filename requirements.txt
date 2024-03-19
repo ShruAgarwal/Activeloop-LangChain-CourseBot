@@ -1,0 +1,7 @@
+streamlit
+langchain
+deeplake
+openai
+cohere
+apify-client
+tiktoken
