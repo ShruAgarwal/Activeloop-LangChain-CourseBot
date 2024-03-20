@@ -71,4 +71,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-.streamlit/
+.streamlit/secrets.toml

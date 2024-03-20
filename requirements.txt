@@ -1,7 +1,7 @@
 streamlit
+apify-client
 langchain
+cohere
 deeplake
 openai
-cohere
-apify-client
 tiktoken
