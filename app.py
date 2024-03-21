@@ -1,23 +1,33 @@
-from langchain.vectorstores import DeepLake
+#from langchain.vectorstores import DeepLake
+#from langchain.chat_models import ChatOpenAI
+from langchain_community.vectorstores import DeepLake
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CohereRerank
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 import streamlit as st
 import io
 import re
 import sys
 from typing import Any, Callable
+from data_loading import run_job
 import os
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ["COHERE_API_KEY"] = st.secrets["COHERE_API_KEY"]
 os.environ["ACTIVELOOP_TOKEN"] = st.secrets["ACTIVELOOP_TOKEN"]
+activeloop_org_id = st.secrets["ACTIVELOOP_ORG_ID"]
+activeloop_db_id = st.secrets["ACTIVELOOP_DB_ID"]
 
+# Task that will run only once to gather the data needed
+# for providing context to the chatbot
+run_job()
+
+# ===============================
 # PAGE CONFIG
 # st.set_page_config(
-#     page_title="Activeloop EduChainBot",
+#     page_title="Activeloop EduChain Bot",
 #     page_icon="🦜")
 
 
@@ -27,7 +37,7 @@ def data_lake():
     embeddings = CohereEmbeddings(model = "embed-english-v2.0")
 
     dbs = DeepLake(
-        dataset_path="hub://shruAg01/educhain_course_chatbot", 
+        dataset_path=f"hub://{activeloop_org_id}/{activeloop_db_id}", 
         read_only=True, 
         embedding_function=embeddings
         )
@@ -72,7 +82,6 @@ memory=memory()
 llm = ChatOpenAI(temperature=0,
         model='gpt-3.5-turbo',
         streaming=True,
-        verbose=True,
         max_tokens=1000)
 
 
@@ -89,22 +98,22 @@ return_source_documents=True
 
 # ---------------------- Chat UI -------------------
 # APP TITLE
-c1, c2 = st.columns([0.5, 4], gap="large")
+c1, c2 = st.columns([0.6, 5], gap="large")
 
 with c1:
     st.image(
         'icon.png',
-        width=95,
+        width=96,
     )
 
 with c2:
-    st.title("Chat with EduChainBot")
-    st.markdown("*AI-Powered LangChain Course Companion*")
+    st.title("Chat with EduChain Bot")
+    st.markdown("*AI-Powered LangChain Course Companion 🤖*")
 
 # =========================
 # APP INFO EXPANDER
 with st.expander("ABOUT THE CHATBOT 👀"):
-    st.image('course_banner.png')
+    st.image('course_banner.png', width=650)
     st.markdown('Explore the Course **[here](https://learn.activeloop.ai/courses/langchain)**')
     st.write('Check the Github repo for detailed info! :)')
 
@@ -121,6 +130,45 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+
+
+# -------- Verbose Display Code --------
+
+def capture_and_display_output(func: Callable[..., Any], args, **kwargs) -> Any:
+    # Capture the standard output
+    original_stdout = sys.stdout
+    sys.stdout = output_catcher = io.StringIO()
+
+    # Run the given function and capture its output
+    response = func(args, **kwargs)
+
+    # Reset the standard output to its original value
+    sys.stdout = original_stdout
+
+    # Clean the captured output
+    output_text = output_catcher.getvalue()
+    clean_text = re.sub(r"\x1b[.?[@-~]", "", output_text)
+
+    # Custom CSS for the response box
+    st.markdown("""
+    <style>
+        .response-value {
+            border: 2px solid #6c757d;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #3d3d3d;
+            font-size: 20px;  # Change this value to adjust the text size
+            font-family: monospace;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    with st.expander("See Langchain Thought Process"):
+        # Display the cleaned text as code
+        st.code(clean_text)
+
+    return response
 
 
 # ------ Function for handling chat interactions ------
@@ -174,44 +222,3 @@ def chat_ui(qa):
 
 # Run function passing the ConversationalRetrievalChain
 chat_ui(qa)
-
-
-# -------- Verbose Display Code --------
-
-def capture_and_display_output(func: Callable[..., Any], args, **kwargs) -> Any:
-    # Capture the standard output
-    original_stdout = sys.stdout
-    sys.stdout = output_catcher = io.StringIO()
-
-    # Run the given function and capture its output
-    response = func(args, **kwargs)
-
-    # Reset the standard output to its original value
-    sys.stdout = original_stdout
-
-    # Clean the captured output
-    output_text = output_catcher.getvalue()
-    clean_text = re.sub(r"\x1b[.?[@-~]", "", output_text)
-
-    # Custom CSS for the response box
-    st.markdown("""
-    <style>
-        .response-value {
-            border: 2px solid #6c757d;
-            border-radius: 5px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            color: #3d3d3d;
-            font-size: 20px;  # Change this value to adjust the text size
-            font-family: monospace;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
-    with st.expander("See Langchain Thought Process"):
-        # Display the cleaned text as code
-        st.code(clean_text)
-
-    return response
-
-# NameError: name 'capture_and_display_output' is not defined

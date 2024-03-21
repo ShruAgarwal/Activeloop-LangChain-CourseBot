@@ -1,6 +1,7 @@
 streamlit
 apify-client
 langchain
+langchain-community
 cohere
 deeplake
 openai
