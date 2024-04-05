@@ -1,12 +1,10 @@
-#from langchain.vectorstores import DeepLake
-#from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import DeepLake
-from langchain.embeddings.cohere import CohereEmbeddings
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import CohereRerank
+from langchain_cohere import CohereEmbeddings
+from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
+from langchain_cohere.rerank import CohereRerank
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 import streamlit as st
 import io
 import re
@@ -18,17 +16,18 @@ os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ["COHERE_API_KEY"] = st.secrets["COHERE_API_KEY"]
 os.environ["ACTIVELOOP_TOKEN"] = st.secrets["ACTIVELOOP_TOKEN"]
 activeloop_org_id = st.secrets["ACTIVELOOP_ORG_ID"]
-activeloop_db_id = st.secrets["ACTIVELOOP_DB_ID"]
+activeloop_db_id = "educhain_course_chatbot"
+
+# ===============================
+# PAGE CONFIG
+st.set_page_config(
+    page_title="Activeloop EduChain Bot",
+    page_icon="🦜")
+
 
 # Task that will run only once to gather the data needed
 # for providing context to the chatbot
 run_job()
-
-# ===============================
-# PAGE CONFIG
-# st.set_page_config(
-#     page_title="Activeloop EduChain Bot",
-#     page_icon="🦜")
 
 
 # ------ Data Retrieval Process ------
@@ -39,14 +38,13 @@ def data_lake():
     dbs = DeepLake(
         dataset_path=f"hub://{activeloop_org_id}/{activeloop_db_id}", 
         read_only=True, 
-        embedding_function=embeddings
+        embedding=embeddings
         )
-    retriever = dbs.as_retriever()
+    retriever = dbs.as_retriever(search_type="mmr")
 
     # DeepLake instance as a retriever to fetch specific params 
     retriever.search_kwargs["distance_metric"] = "cos"
     retriever.search_kwargs["fetch_k"] = 20
-    retriever.search_kwargs["maximal_marginal_relevance"] = True
     retriever.search_kwargs["k"] = 20
 
     # -- Refines and Ranks documents in alignment with a user’s search criteria --
@@ -79,20 +77,22 @@ memory=memory()
 
 
 # ---------- Initiates the LLM Chat model ----------
-llm = ChatOpenAI(temperature=0,
-        model='gpt-3.5-turbo',
-        streaming=True,
-        max_tokens=1000)
+llm = ChatOpenAI(
+    temperature=0,
+    model='gpt-3.5-turbo',
+    streaming=True,
+    max_tokens=1000
+)
 
 
 # ---------- Builds the Conversational Chain ----------
 qa = ConversationalRetrievalChain.from_llm(
-llm=llm,
-retriever=compression_retriever,
-memory=memory,
-verbose=True,
-chain_type="stuff",
-return_source_documents=True
+    llm=llm,
+    retriever=compression_retriever,
+    memory=memory,
+    verbose=True,
+    chain_type="stuff",
+    return_source_documents=True
 )
 
 
@@ -113,9 +113,12 @@ with c2:
 # =========================
 # APP INFO EXPANDER
 with st.expander("ABOUT THE CHATBOT 👀"):
+    st.markdown(""":orange[An educational chatbot that demonstrates the power of **Retrieval Augmented Generation (RAG)** to]
+    answer queries related to the course and provide relevant info to users by retrieving data
+    from an extensive and detailed knowledge base.""")
+    st.link_button("Explore the Course 📖", "https://learn.activeloop.ai/courses/langchain")
     st.image('course_banner.png', width=650)
-    st.markdown('Explore the Course **[here](https://learn.activeloop.ai/courses/langchain)**')
-    st.write('Check the Github repo for detailed info! :)')
+    st.info('⭐ Check the [Github repo](https://github.com/ShruAgarwal/Activeloop-LangChain-CourseBot) for detailed info on this chatbot!')
 
 # =========================
 # Triggers the clearing of the cache and session states
@@ -220,5 +223,12 @@ def chat_ui(qa):
             {"role": "assistant", "content": full_response}
         )
 
-# Run function passing the ConversationalRetrievalChain
-chat_ui(qa)
+# chat_ui(qa)
+
+def main():
+
+    # Run function passing the ConversationalRetrievalChain
+    chat_ui(qa)
+
+if __name__ == "__main__":
+    main()
