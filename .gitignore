@@ -71,5 +71,5 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-/educhain_bot
+educhain_bot/
 .streamlit/secrets.toml
