@@ -40,11 +40,11 @@ def run_job():
     # ---- Translates text data into numerical data ----
     embeddings = CohereEmbeddings(model = "embed-english-v2.0")
 
-    username = activeloop_org_id        # get yours from app.activeloop.ai
-    db_id = "educhain_course_chatbot"       # replace with your Database name
+    username = activeloop_org_id                # get yours from app.activeloop.ai
+    db_id = "activeloop_course_educhain_bot"       # replace with your Database name
     #DeepLake.force_delete_by_path(f"hub://{username}/{db_id}")
 
 
     # ---- Stores and retrieves the transformed data ----
-    dbs = DeepLake(dataset_path=f"hub://{username}/{db_id}", embedding_function=embeddings)
+    dbs = DeepLake(dataset_path=f"hub://{username}/{db_id}", embedding=embeddings)
     dbs.add_documents(docs_split)

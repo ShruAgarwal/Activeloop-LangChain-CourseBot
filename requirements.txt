@@ -1,6 +1,6 @@
 apify_client==1.6.4
 cohere==5.2.2
-deeplake==3.8.27
+deeplake==3.9.0
 langchain==0.1.14
 langchain-community==0.0.31
 langchain-cohere==0.1.0
