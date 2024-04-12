@@ -60,7 +60,7 @@ with st.sidebar:
 
 # ------ Data Retrieval Process ------
 @st.cache_resource()
-def data_lake(cohere_api_key):
+def data_lake():
     embeddings = CohereEmbeddings(model = "embed-english-v2.0", cohere_api_key=cohere_api_key)
 
     dbs = DeepLake(
@@ -86,7 +86,7 @@ def data_lake(cohere_api_key):
         )
     return dbs, compression_retriever, retriever
 
-dbs, compression_retriever, retriever = data_lake(cohere_api_key)
+dbs, compression_retriever, retriever = data_lake()
 
 
 # ---------- Setting up a Memory System for the ChatBot ----------
