@@ -11,6 +11,7 @@ import re
 import sys
 from typing import Any, Callable
 import os
+os.environ["COHERE_API_KEY"] = st.secrets["COHERE_API_KEY"]
 os.environ["ACTIVELOOP_TOKEN"] = st.secrets["ACTIVELOOP_TOKEN"]
 activeloop_org_id = st.secrets["ACTIVELOOP_ORG_ID"]
 activeloop_db_id = "activeloop_course_educhain_bot"
@@ -46,14 +47,13 @@ with st.expander("ABOUT THE CHATBOT 👀"):
 # =========================
 # ASKING FOR USER'S API KEYS
 with st.sidebar:
-    st.header('📌 Get Started')
-    with st.popover("🔑 Enter Your Keys Here"):
-        cohere_api_key = st.text_input('COHERE API KEY:', type='password')
-        openai_api_key = st.text_input('OPENAI API KEY:', type='password')
-        if not (cohere_api_key and openai_api_key):
-            st.warning('Please enter your API keys!', icon='⚠️')
-        else:
-            st.success('You can now proceed to ask questions to the chatbot! 👉')
+    st.header('🔑 Get Started')
+    
+    openai_api_key = st.text_input('ENTER OPENAI API KEY:', type='password')
+    if not openai_api_key:
+        st.warning('Please enter your API key!', icon='⚠️')
+    else:
+        st.success('You can now proceed to ask questions to the chatbot! 👉')
     
     st.markdown('---')
 
@@ -61,7 +61,7 @@ with st.sidebar:
 # ------ Data Retrieval Process ------
 @st.cache_resource()
 def data_lake():
-    embeddings = CohereEmbeddings(model = "embed-english-v2.0", cohere_api_key=cohere_api_key)
+    embeddings = CohereEmbeddings(model = "embed-english-v2.0")
 
     dbs = DeepLake(
         dataset_path=f"hub://{activeloop_org_id}/{activeloop_db_id}", 
@@ -131,9 +131,8 @@ if st.sidebar.button("Start a New Chat Interaction"):
 
 # -- Part of Chat UI --
 st.sidebar.markdown('---')
-st.sidebar.write("⚡ *If you don't have the required keys, get them for FREE using the links below!*")
-st.sidebar.info("""[COHERE TRIAL API KEY](https://dashboard.cohere.com/api-keys) and
-[OPENAI API KEY](https://platform.openai.com/api-keys)""")
+st.sidebar.info("""⚡ If you don't have your OPENAI API key,
+    then you can sign up for free from [here!](https://platform.openai.com/api-keys)""")
 
 st.sidebar.info('⭐ Check out the [Github repo](https://github.com/ShruAgarwal/Activeloop-LangChain-CourseBot) for detailed info!')
 st.sidebar.info("*Made by [Shruti Agarwal](https://www.linkedin.com/in/shruti-agarwal-bb7889237)*")
