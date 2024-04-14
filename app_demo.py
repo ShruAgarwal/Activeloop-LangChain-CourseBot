@@ -49,9 +49,10 @@ with st.expander("ABOUT THE CHATBOT 👀"):
 with st.sidebar:
     st.header('🔑 Get Started')
     
-    openai_api_key = st.text_input('ENTER OPENAI API KEY:', type='password')
+    openai_api_key = st.text_input('OpenAI API Key', type='password')
     if not openai_api_key:
-        st.warning('Please enter your API key!', icon='⚠️')
+        st.warning('Please enter your OpenAI API key!', icon='⚠️')
+        st.stop()
     else:
         st.success('You can now proceed to ask questions to the chatbot! 👉')
     
@@ -139,7 +140,7 @@ st.sidebar.info("*Made by [Shruti Agarwal](https://www.linkedin.com/in/shruti-ag
 
 # Initializes chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [{"role": "assistant", "content": "How can I help you?"}]
 
 
 # Display chat messages from history on app rerun
