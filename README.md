@@ -50,3 +50,4 @@ This educational chatbot demonstrates the power of **Retrieval Augmented Generat
 ## Credits ✨
 - *Inspired to build this chatbot from* [this tutorial!](https://www.activeloop.ai/resources/retrieval-augmented-generation-for-llm-bots-with-lang-chain/)
 - *Thanks to* [Yuichiro's Streamlit Theme Editor](https://github.com/whitphx/streamlit-theme-editor) that helped me find the suitable app's theme :)
+- *Chatbot logo and tech stack design made by me using [Canva](https://www.canva.com/)*
